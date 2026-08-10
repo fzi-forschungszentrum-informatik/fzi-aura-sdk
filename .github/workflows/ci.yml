@@ -1,0 +1,232 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: ${{ github.workspace }}/src
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_ROOT_USER_ACTION: "ignore"
+
+jobs:
+  precommit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    container: python:3.12-slim
+
+    steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Mark repository as safe for Git
+        run: git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install pre-commit
+        run: |
+          python --version
+          git --version
+          python -m pip install --upgrade pip
+          python -m pip install pre-commit
+
+      - name: Run pre-commit
+        run: |
+          pre-commit --version
+          pre-commit run --all-files --show-diff-on-failure
+
+  pytest_python:
+    name: Python ${{ matrix.python }} / latest compatible deps
+    needs: precommit
+    runs-on: ubuntu-latest
+    container: "python:${{ matrix.python }}-slim"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+
+    steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Mark repository as safe for Git
+        run: git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install package
+        run: |
+          python --version
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Show resolved versions
+        run: |
+          python - <<'PY'
+          import sys
+          import numpy
+          import pandas
+          import pyarrow
+          import PIL
+
+          print("Python :", sys.version)
+          print("NumPy  :", numpy.__version__)
+          print("pandas :", pandas.__version__)
+          print("PyArrow:", pyarrow.__version__)
+          print("Pillow :", PIL.__version__)
+          PY
+
+      - name: Run tests
+        run: pytest -q
+
+  pytest_dependencies:
+    name: ${{ matrix.label }}
+    needs: precommit
+    runs-on: ubuntu-latest
+    container: "python:${{ matrix.python }}-slim"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: "legacy: NumPy 1 / pandas 1"
+            python: "3.8"
+            numpy_spec: "numpy>=1.22,<2"
+            pandas_spec: "pandas>=1.5,<2"
+
+          - label: "Python 3.8: NumPy 1 / pandas 2"
+            python: "3.8"
+            numpy_spec: "numpy>=1.22,<2"
+            pandas_spec: "pandas>=2,<2.1"
+
+          - label: "NumPy 1 / pandas 2"
+            python: "3.12"
+            numpy_spec: "numpy>=1.26,<2"
+            pandas_spec: "pandas>=2,<3"
+
+          - label: "NumPy 2 / pandas 2"
+            python: "3.12"
+            numpy_spec: "numpy>=2,<3"
+            pandas_spec: "pandas>=2,<3"
+
+          - label: "NumPy 1 / pandas 3"
+            python: "3.12"
+            numpy_spec: "numpy>=1.26,<2"
+            pandas_spec: "pandas>=3,<4"
+
+          - label: "NumPy 2 / pandas 3"
+            python: "3.12"
+            numpy_spec: "numpy>=2,<3"
+            pandas_spec: "pandas>=3,<4"
+
+    steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Mark repository as safe for Git
+        run: git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install dependency combination
+        run: |
+          python --version
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "${{ matrix.numpy_spec }}" \
+            "${{ matrix.pandas_spec }}"
+          python -m pip install -e ".[dev]"
+
+      - name: Show resolved versions
+        run: |
+          python - <<'PY'
+          import sys
+          import numpy
+          import pandas
+          import pyarrow
+          import PIL
+
+          print("Python :", sys.version)
+          print("NumPy  :", numpy.__version__)
+          print("pandas :", pandas.__version__)
+          print("PyArrow:", pyarrow.__version__)
+          print("Pillow :", PIL.__version__)
+          PY
+
+      - name: Run tests
+        run: pytest -q
+
+  pytest_latest:
+    name: Latest Python / latest ecosystem
+    needs: precommit
+    runs-on: ubuntu-latest
+    container: "python:slim"
+    continue-on-error: true
+
+    steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Mark repository as safe for Git
+        run: git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install newest available ecosystem
+        run: |
+          python --version
+          python -m pip install --upgrade pip
+          python -m pip install \
+            --upgrade \
+            --upgrade-strategy eager \
+            -e ".[dev]"
+
+      - name: Show resolved versions
+        run: |
+          python - <<'PY'
+          import sys
+          import numpy
+          import pandas
+          import pyarrow
+          import PIL
+
+          print("Python :", sys.version)
+          print("NumPy  :", numpy.__version__)
+          print("pandas :", pandas.__version__)
+          print("PyArrow:", pyarrow.__version__)
+          print("Pillow :", PIL.__version__)
+          PY
+
+      - name: Run tests
+        run: pytest -q

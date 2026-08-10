@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fzi-aura"
+version = "1.0.0"
+description = "Python SDK for the FZI-AURA dataset."
+readme = "README.md"
+requires-python = ">=3.8"
+
+# Legacy license metadata is intentional. PEP 639 support would require a
+# newer setuptools baseline that conflicts with Python 3.8 compatibility.
+license = {file = "LICENSE"}
+authors = [
+  {name = "Rupert Polley", email = "polley@fzi.de"},
+]
+maintainers = [
+  {name = "Rupert Polley", email = "polley@fzi.de"},
+]
+keywords = ["autonomous-driving", "dataset", "lidar", "radar", "camera", "fzi-aura"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "numpy>=1.22",
+  "pandas",
+  "pyarrow",
+  "Pillow",
+]
+
+[project.urls]
+Repository = "https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk"
+Issues = "https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/issues"
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+vis = ["matplotlib"]
+download = ["huggingface_hub>=0.24"]
+mount = ["huggingface_hub>=0.24", "ratarmount"]
+
+[project.scripts]
+fzi-aura-validate = "fzi_aura.cli.validate:main"
+fzi-aura-stats = "fzi_aura.cli.stats:main"
+fzi-aura-pcd-schema-stats = "fzi_aura.cli.pcd_schema_stats:main"
+fzi-aura-download = "fzi_aura.download:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
