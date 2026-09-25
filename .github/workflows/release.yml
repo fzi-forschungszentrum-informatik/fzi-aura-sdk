@@ -60,17 +60,29 @@ jobs:
 
       - name: Install and smoke-test the wheel
         run: |
-          python -m pip uninstall -y fzi-aura
-          python -m pip install dist/*.whl
-          env -u PYTHONPATH python - <<'PY'
+          WHEEL_PATH="$(find "$GITHUB_WORKSPACE/dist" -name '*.whl' -print -quit)"
+
+          python -m venv /tmp/fzi-aura-wheel-test
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/python -m pip install "$WHEEL_PATH"
+
+          cd /tmp
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/python - <<'PY'
           from importlib.metadata import version
 
           import fzi_aura
 
           assert fzi_aura.__version__ == version("fzi-aura")
           PY
-          env -u PYTHONPATH fzi-aura-validate --help
-          env -u PYTHONPATH fzi-aura-download --help
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/fzi-aura-validate --help
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/fzi-aura-download --help
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4
