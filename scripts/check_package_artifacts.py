@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Verify that notebooks are included in the sdist but excluded from wheels."""
 
 from __future__ import annotations
