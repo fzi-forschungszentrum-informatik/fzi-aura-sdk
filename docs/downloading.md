@@ -5,10 +5,10 @@ the required archives, and prepares a dataset root for the SDK.
 
 ## Setup
 
-Install the downloader from a checkout of the SDK:
+Install the downloader from PyPI:
 
 ```bash
-python -m pip install ".[download]"
+python -m pip install "fzi-aura[download]"
 ```
 
 Accept the dataset terms on the
@@ -202,7 +202,7 @@ Archive mounting is intended for storage systems where extracting many small
 files is undesirable. Install the mount dependencies:
 
 ```bash
-python -m pip install ".[mount]"
+python -m pip install "fzi-aura[mount]"
 ```
 
 Then pass a separate mount point:

@@ -230,3 +230,59 @@ jobs:
 
       - name: Run tests
         run: pytest -q
+
+  package:
+    name: Build and inspect distributions
+    needs: precommit
+    runs-on: ubuntu-latest
+    container: python:3.12-slim
+
+    steps:
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Mark repository as safe for Git
+        run: git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Build distributions
+        run: |
+          python --version
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+          python -m build
+          python -m twine check dist/*
+
+      - name: Verify distribution notebook policy
+        run: python scripts/check_package_artifacts.py dist
+
+      - name: Install and smoke-test the wheel
+        run: |
+          WHEEL_PATH="$(find "$GITHUB_WORKSPACE/dist" -name '*.whl' -print -quit)"
+
+          python -m venv /tmp/fzi-aura-wheel-test
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/python -m pip install "$WHEEL_PATH"
+
+          cd /tmp
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/python - <<'PY'
+          from importlib.metadata import version
+
+          import fzi_aura
+
+          assert fzi_aura.__version__ == version("fzi-aura")
+          PY
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/fzi-aura-validate --help
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/fzi-aura-download --help

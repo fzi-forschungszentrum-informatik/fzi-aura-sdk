@@ -1,0 +1,111 @@
+name: Publish Python package
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install test and packaging tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]" build twine
+
+      - name: Verify release tag matches package version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          project = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          package_version = project["project"]["version"]
+          expected_tag = f"v{package_version}"
+          release_tag = os.environ["RELEASE_TAG"]
+          if release_tag != expected_tag:
+              raise SystemExit(
+                  f"Release tag {release_tag!r} does not match package version "
+                  f"{package_version!r}; expected {expected_tag!r}."
+              )
+          print(f"Release tag {release_tag} matches package version {package_version}.")
+          PY
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Build distributions
+        run: |
+          python -m build
+          python -m twine check dist/*
+
+      - name: Verify distribution notebook policy
+        run: python scripts/check_package_artifacts.py dist
+
+      - name: Install and smoke-test the wheel
+        run: |
+          WHEEL_PATH="$(find "$GITHUB_WORKSPACE/dist" -name '*.whl' -print -quit)"
+
+          python -m venv /tmp/fzi-aura-wheel-test
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/python -m pip install "$WHEEL_PATH"
+
+          cd /tmp
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/python - <<'PY'
+          from importlib.metadata import version
+
+          import fzi_aura
+
+          assert fzi_aura.__version__ == version("fzi-aura")
+          PY
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/fzi-aura-validate --help
+
+          env -u PYTHONPATH \
+            /tmp/fzi-aura-wheel-test/bin/fzi-aura-download --help
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fzi-aura
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
