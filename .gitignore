@@ -28,3 +28,4 @@ env/
 .cache/
 
 .vscode/
+.DS_Store

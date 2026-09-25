@@ -1,0 +1,4 @@
+# Executed notebooks are versioned documentation. Include them in the source
+# distribution; package discovery keeps them out of the installable wheel.
+recursive-include notebooks *.ipynb
+prune src/fzi_aura.egg-info

@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="assets/FZI_Logo.svg" style="height: 1em; vertical-align: middle;">
+  <img src="https://raw.githubusercontent.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/main/assets/FZI_Logo.svg" style="height: 1em; vertical-align: middle;">
   FZI-AURA SDK
 </h1>
 
@@ -10,13 +10,13 @@
 
 <div align="center">
   <a href="https://huggingface.co/datasets/fzi-forschungszentrum-informatik/FZI-AURA">Dataset</a>
-  · <a href="notebooks/00_quickstart.ipynb">Quickstart notebook</a>
+  · <a href="https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/notebooks/00_quickstart.ipynb">Quickstart notebook</a>
   · <a href="https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/issues">Issues</a>
 </div>
 
 ## Compatibility
 
-FZI-AURA SDK 1.0.0 supports:
+FZI-AURA SDK 1.0.x supports:
 
 - FZI-AURA dataset release v1.X
 - FZI-AURA data format v1.2.1
@@ -24,17 +24,29 @@ FZI-AURA SDK 1.0.0 supports:
 
 ## Installation
 
-From a checkout of this repository:
+Install the SDK from PyPI with:
 
 ```bash
-python -m pip install ".[download]"
+python -m pip install fzi-aura
 ```
 
-This installs the SDK and the FZI-AURA downloader. Visualization packages used
-by the notebooks can be installed with:
+The downloader is an optional dependency:
 
 ```bash
-python -m pip install ".[vis]"
+python -m pip install "fzi-aura[download]"
+```
+
+Visualization packages used by the notebooks can be installed with:
+
+```bash
+python -m pip install "fzi-aura[vis]"
+```
+
+For development from a repository checkout, install the development,
+downloader, and notebook visualization dependencies together:
+
+```bash
+python -m pip install -e ".[dev,download,vis]"
 ```
 
 ## Download FZI-AURA
@@ -73,7 +85,7 @@ Set the dataset root for the examples and notebooks:
 export FZI_AURA_ROOT=/data/fzi-aura
 ```
 
-See [Downloading FZI-AURA](docs/downloading.md) for layer selection, archive
+See [Downloading FZI-AURA](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/docs/downloading.md) for layer selection, archive
 retention, verification, parallel extraction, and archive mounting.
 
 ## Quickstart
@@ -162,10 +174,10 @@ cloud, labels = semantic_frame.load_lidar_semantic_pair(
 The notebooks cover calibration, coordinate transforms, camera projection, ego
 poses, and temporal trajectories with complete examples.
 
-See [FZI-AURA data format](docs/data-format.md) for the public dataset layout,
+See [FZI-AURA data format](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/docs/data-format.md) for the public dataset layout,
 sample index, sensor files, annotations, calibration, and ego data.
 Transform directions, temporal alignment, and projection conventions are
-covered in [Coordinate systems and transforms](docs/coordinate-systems.md).
+covered in [Coordinate systems and transforms](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/docs/coordinate-systems.md).
 
 ## Validation
 
@@ -180,13 +192,13 @@ annotations, calibration, and point-label alignment.
 
 ## Examples and notebooks
 
-- [`examples/quickstart.py`](examples/quickstart.py): compact SDK example
-- [`notebooks/00_quickstart.ipynb`](notebooks/00_quickstart.ipynb): dataset,
+- [`examples/quickstart.py`](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/examples/quickstart.py): compact SDK example
+- [`notebooks/00_quickstart.ipynb`](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/notebooks/00_quickstart.ipynb): dataset,
   scene, and frame access
-- [`notebooks/01_sensor_data_and_pcd_fields.ipynb`](notebooks/01_sensor_data_and_pcd_fields.ipynb): camera, LiDAR, radar, and PCD fields
-- [`notebooks/02_annotations_calibration_projection.ipynb`](notebooks/02_annotations_calibration_projection.ipynb):
+- [`notebooks/01_sensor_data_and_pcd_fields.ipynb`](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/notebooks/01_sensor_data_and_pcd_fields.ipynb): camera, LiDAR, radar, and PCD fields
+- [`notebooks/02_annotations_calibration_projection.ipynb`](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/notebooks/02_annotations_calibration_projection.ipynb):
   boxes, semantic labels, calibration, projection, and point-cloud fusion
-- [`notebooks/03_context_vehicle_state_and_trajectories.ipynb`](notebooks/03_context_vehicle_state_and_trajectories.ipynb):
+- [`notebooks/03_context_vehicle_state_and_trajectories.ipynb`](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/notebooks/03_context_vehicle_state_and_trajectories.ipynb):
   context, vehicle state, ego motion, and object trajectories
 
 ## Contributing and support
@@ -194,9 +206,12 @@ annotations, calibration, and point-label alignment.
 Use [GitHub Issues](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/issues)
 for bugs and usage questions. Pull requests are welcome.
 
+The release process is documented in
+[docs/releasing.md](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/docs/releasing.md).
+
 ## License
 
-The SDK is licensed under [Apache License 2.0](LICENSE). The FZI-AURA dataset is distributed separately and is subject to its own
+The SDK is licensed under [Apache License 2.0](https://github.com/fzi-forschungszentrum-informatik/fzi-aura-sdk/blob/main/LICENSE). The FZI-AURA dataset is distributed separately and is subject to its own
 license. See the [FZI-AURA dataset page](https://huggingface.co/datasets/fzi-forschungszentrum-informatik/FZI-AURA#license-and-third-party-data)
 for dataset licensing information.
 
